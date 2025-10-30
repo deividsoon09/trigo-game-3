@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TrigOlympics 🧮 – Identidades y Ecuaciones</title>
+  <style>
+    :root{
+      --bg:#0f172a; /* slate-900 */
+      --panel:#111827; /* gray-900 */
+      --card:#1f2937; /* gray-800 */
+      --muted:#94a3b8; /* slate-400 */
+      --text:#e5e7eb; /* gray-200 */
+      --accent:#22d3ee; /* cyan-400 */
+      --accent2:#a78bfa; /* violet-400 */
+      --ok:#10b981; /* emerald */
+      --bad:#ef4444; /* red */
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu; background:linear-gradient(180deg,#0b1224 0%,#0f172a 60%); color:var(--text);}
+    .wrap{max-width:1000px;margin:0 auto;padding:24px}
+    header{display:flex;align-items:center;gap:16px;margin:8px 0 20px}
+    .logo{width:48px;height:48px;border-radius:12px;background:radial-gradient(circle at 30% 30%,var(--accent),transparent 60%),radial-gradient(circle at 70% 70%,var(--accent2),transparent 60%),var(--panel);box-shadow:0 8px 30px rgba(34,211,238,0.25)}
+    h1{font-size:clamp(20px,3vw,34px);margin:0}
+    .sub{color:var(--muted)}
+    .grid{display:grid;grid-template-columns:1fr 320px;gap:16px}
+    @media (max-width:900px){.grid{grid-template-columns:1fr}}
+    .card{background:rgba(31,41,55,.7);border:1px solid rgba(148,163,184,.15);border-radius:16px;padding:18px;box-shadow:0 10px 30px rgba(2,8,23,.4)}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    button,.chip,select{background:var(--panel);color:var(--text);border:1px solid rgba(148,163,184,.2);border-radius:12px;padding:10px 14px;font-weight:600;cursor:pointer}
+    button:hover{filter:brightness(1.1)}
+    .chip{font-size:12px;padding:6px 10px}
+    .status{display:flex;gap:10px;flex-wrap:wrap}
+    .status .chip{background:#0b1326}
+    .q{font-size:22px;line-height:1.45;margin:4px 0 14px;}
+    .options{display:grid;gap:10px}
+    .opt{padding:12px 14px;border:1px solid rgba(148,163,184,.2);border-radius:12px;background:#0b1326;cursor:pointer}
+    .opt:hover{background:#0d1730}
+    .opt.correct{border-color:rgba(16,185,129,.8);box-shadow:0 0 0 2px rgba(16,185,129,.35) inset}
+    .opt.wrong{border-color:rgba(239,68,68,.8);box-shadow:0 0 0 2px rgba(239,68,68,.35) inset}
+    .hidden{display:none}
+    .center{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center}
+    .big{font-size:42px;margin:0}
+    .muted{color:var(--muted)}
+    .footer{display:flex;justify-content:space-between;align-items:center;margin-top:14px}
+    .timerbar{height:10px;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:999px;transition:width .2s}
+    .progress{background:#0b1326;border-radius:999px;height:10px}
+    .kbd{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;background:#0b1326;border:1px solid rgba(148,163,184,.25);border-radius:8px;padding:2px 6px}
+    .right .card{position:sticky;top:16px}
+    .tag{font-size:12px;color:#7dd3fc;background:#03202a;border:1px solid #155e75;padding:2px 8px;border-radius:999px}
+    .small{font-size:12px}
+    .credits{margin-top:8px;color:var(--muted);font-size:12px}
+    .hr{height:1px;background:rgba(148,163,184,.15);margin:10px 0}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo" aria-hidden="true"></div>
+    <div>
+      <h1>TrigOlympics – Identidades y Ecuaciones</h1>
+      <div class="sub">Juego rápido para practicar <strong>identidades trigonométricas</strong> y <strong>resolución de ecuaciones</strong> en grados. ✨</div>
+    </div>
+  </header>
+
+  <div class="grid">
+    <main class="card" id="main">
+      <div class="toolbar">
+        <button id="btnStart">▶️ Empezar</button>
+        <button id="btnReset" class="hidden">🔄 Reiniciar</button>
+        <label class="small">Modo:
+          <select id="mode">
+            <option value="mixto">Mixto (recomendado)</option>
+            <option value="identidades">Solo identidades</option>
+            <option value="ecuaciones">Solo ecuaciones</option>
+          </select>
+        </label>
+        <span class="chip" title="Preguntas por partida">🎯 <span id="qCount">10</span> preguntas</span>
+        <span class="chip" title="Tiempo total">⏱️ <span id="timeTotal">120</span> s</span>
+      </div>
+
+      <div id="screenIntro" class="center">
+        <p>Responde correctamente para sumar puntos. Incorrectas restan. ¡Gana más con rachas!</p>
+        <ul class="small" style="text-align:left;max-width:680px;line-height:1.5">
+          <li><strong>Puntuación:</strong> +10 correcta, −5 incorrecta, +3 extra por racha ≥3.</li>
+          <li><strong>Tiempo:</strong> 120 s para 10 preguntas. Pausa con <span class="kbd">P</span>.</li>
+          <li><strong>Consejo:</strong> recuerda identidades clave: sin²x+cos²x=1, 1+tan²x=sec²x, 1+cot²x=csc²x.</li>
+        </ul>
+      </div>
+
+      <div id="screenGame" class="hidden">
+        <div class="status" style="justify-content:space-between;align-items:center">
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <span class="chip">Puntos: <strong id="score">0</strong></span>
+            <span class="chip">Racha: <strong id="streak">0</strong></span>
+            <span class="chip">Pregunta <strong id="nNow">1</strong>/<span id="nTotal">10</span></span>
+            <span class="tag" id="tagType">—</span>
+          </div>
+          <div style="min-width:200px;width:35%" aria-label="Barra de tiempo" class="progress"><div id="bar" class="timerbar" style="width:100%"></div></div>
+        </div>
+        <div class="hr"></div>
+        <div class="q" id="question">—</div>
+        <div class="options" id="options"></div>
+        <div class="footer">
+          <div class="muted small" id="feedback"> </div>
+          <button id="btnNext" class="hidden">Siguiente ➡️</button>
+        </div>
+      </div>
+
+      <div id="screenEnd" class="hidden center">
+        <p class="big" id="endTitle">¡Tiempo!</p>
+        <p id="endSummary">Puntaje total: 0</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button id="btnAgain">Jugar otra vez</button>
+          <button id="btnExport">📤 Exportar resultados (CSV)</button>
+        </div>
+      </div>
+    </main>
+
+    <aside class="right">
+      <div class="card">
+        <h3 style="margin-top:4px">Banco incluido</h3>
+        <p class="muted small">Puedes editar las preguntas en el código (sección <span class="kbd">const BANK</span>). Todo está en grados.</p>
+        <ul class="small" style="line-height:1.6">
+          <li>Identidades: verificación de validez.</li>
+          <li>Ecuaciones: elegir conjunto de soluciones en [0°, 360°).</li>
+          <li>Distractores diseñados para errores típicos (signos/cuadrantes).</li>
+        </ul>
+        <div class="hr"></div>
+        <h4 style="margin:6px 0">Atajos</h4>
+        <p class="small"><span class="kbd">P</span> Pausa · <span class="kbd">N</span> Siguiente</p>
+        <div class="credits">Creado para docentes: juego 100% offline (HTML único). 🎓</div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+// =====================
+// Banco de preguntas
+// =====================
+// type: 'id' (identidad) o 'eq' (ecuación)
+// Cada pregunta tiene: text, options[], answer (índice correcto), tag
+
+const BANK = [
+  // Identidades (verdadero/falso)
+  {type:'id', tag:'Identidad', text:'sin²(x) + cos²(x) = 1', options:['Siempre verdadera','Falsa'], answer:0},
+  {type:'id', tag:'Identidad', text:'1 + tan²(x) = sec²(x)', options:['Siempre verdadera','Falsa'], answer:0},
+  {type:'id', tag:'Identidad', text:'1 + cot²(x) = csc²(x)', options:['Siempre verdadera','Falsa'], answer:0},
+  {type:'id', tag:'Identidad', text:'sin(2x) = 2 sin(x) cos(x)', options:['Siempre verdadera','Falsa'], answer:0},
+  {type:'id', tag:'Identidad', text:'cos(2x) = cos²(x) − sin²(x)', options:['Siempre verdadera','Falsa'], answer:0},
+  {type:'id', tag:'Identidad', text:'tan(2x) = 2 tan(x) / (1 − tan²(x))', options:['Siempre verdadera','Falsa'], answer:0},
+  {type:'id', tag:'Identidad', text:'sin(x+y) = sin x + sin y', options:['Siempre verdadera','Falsa (falta el término con cosenos)'], answer:1},
+  {type:'id', tag:'Identidad', text:'cos(x+y) = cos x cos y − sin x sin y', options:['Siempre verdadera','Falsa'], answer:0},
+  {type:'id', tag:'Identidad', text:'sec(x) = 1 / cos(x)', options:['Siempre verdadera','Falsa'], answer:0},
+  {type:'id', tag:'Identidad', text:'csc(x) = 1 / tan(x)', options:['Siempre verdadera','Falsa'], answer:1},
+
+  // Ecuaciones (soluciones en [0,360))
+  {type:'eq', tag:'Ecuación', text:'Resuelve: sin(x) = 1/2', options:['30°, 150°','45°, 315°','60°, 300°','90°'], answer:0},
+  {type:'eq', tag:'Ecuación', text:'Resuelve: cos(x) = −√3/2', options:['150°, 210°','120°, 240°','60°, 300°','90°, 270°'], answer:1},
+  {type:'eq', tag:'Ecuación', text:'Resuelve: tan(x) = 1', options:['45°, 225°','90°, 270°','135°, 315°','0°, 180°'], answer:0},
+  {type:'eq', tag:'Ecuación', text:'Resuelve: sin(2x) = 0', options:['x = 0°, 90°, 180°, 270°','x = 0°, 180°','x = 90°, 270°','x = 45°, 225°'], answer:0},
+  {type:'eq', tag:'Ecuación', text:'Resuelve: cos(2x) = 1', options:['x = 0°, 90°, 180°, 270°','x = 0°, 180°','x = 90°, 270°','x = 45°, 225°'], answer:1},
+  {type:'eq', tag:'Ecuación', text:'Resuelve: 2sin(x) = √3', options:['x = 60°, 120°','x = 30°, 150°','x = 45°, 315°','x = 0°, 180°'], answer:1},
+  {type:'eq', tag:'Ecuación', text:'Resuelve: cos(x) = 0', options:['0°, 180°','90°, 270°','45°, 225°','60°, 300°'], answer:1},
+  {type:'eq', tag:'Ecuación', text:'Resuelve: sin(x) = −1', options:['270°','90°','180°','0°'], answer:0},
+  {type:'eq', tag:'Ecuación', text:'Resuelve: tan(x) = √3', options:['60°, 240°','30°, 210°','120°, 300°','45°, 225°'], answer:0},
+  {type:'eq', tag:'Ecuación', text:'Si cos(2x) = 0, entonces x = ?', options:['45°, 225°','90°, 270°','0°, 180°','30°, 150°'], answer:0},
+
+  // Mixtas con simplificación
+  {type:'eq', tag:'Simplifica', text:'Simplifica: (1 + tan²x) / sec²x = ?', options:['1','tan²x','sec²x','cos²x'], answer:0},
+  {type:'eq', tag:'Simplifica', text:'Simplifica: (1 − cos(2x)) / 2 = ?', options:['sin²x','cos²x','tan²x','1'], answer:0},
+  {type:'eq', tag:'Simplifica', text:'Simplifica: (1 + cos(2x)) / 2 = ?', options:['cos²x','sin²x','sec²x','csc²x'], answer:0},
+  {type:'id', tag:'Identidad', text:'sec²x − tan²x ≡ 1', options:['Siempre verdadera','Falsa'], answer:0},
+  {type:'id', tag:'Identidad', text:'sin(−x) = −sin x y cos(−x) = cos x', options:['Siempre verdadera','Falsa'], answer:0},
+  {type:'eq', tag:'Ecuación', text:'Si sin(x) = 0, soluciones en [0°,360°):', options:['0°, 180°','90°, 270°','45°, 225°','60°, 300°'], answer:0},
+];
+
+// =====================
+// Lógica del juego
+// =====================
+let state = {
+  running:false,
+  paused:false,
+  mode:'mixto',
+  total:10,
+  timeTotal:120,
+  timeLeft:120,
+  score:0,
+  streak:0,
+  qIndex:0,
+  order:[],
+  history:[], // {q, correct, time}
+  timer:null,
+};
+
+// Elements
+const el = id => document.getElementById(id);
+const btnStart = el('btnStart');
+const btnReset = el('btnReset');
+const btnNext = el('btnNext');
+const btnAgain = el('btnAgain');
+const btnExport = el('btnExport');
+const screenIntro = el('screenIntro');
+const screenGame = el('screenGame');
+const screenEnd = el('screenEnd');
+const qCount = el('qCount');
+const timeTotal = el('timeTotal');
+const scoreEl = el('score');
+const streakEl = el('streak');
+const nNow = el('nNow');
+const nTotal = el('nTotal');
+const tagType = el('tagType');
+const questionEl = el('question');
+const optionsEl = el('options');
+const feedbackEl = el('feedback');
+const bar = el('bar');
+const endSummary = el('endSummary');
+const endTitle = el('endTitle');
+const modeSel = el('mode');
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a}
+
+function pickBank(){
+  const mode = state.mode;
+  let pool = BANK.filter(q=>{
+    if(mode==='identidades') return q.type==='id';
+    if(mode==='ecuaciones') return q.type==='eq';
+    return true;
+  });
+  pool = shuffle([...pool]);
+  return pool.slice(0,state.total);
+}
+
+function setScreen(which){
+  [screenIntro, screenGame, screenEnd].forEach(s=>s.classList.add('hidden'));
+  which.classList.remove('hidden');
+}
+
+function start(){
+  state.running=true; state.paused=false; state.score=0; state.streak=0; state.qIndex=0; state.timeLeft=state.timeTotal; state.history=[];
+  state.order = pickBank();
+  nTotal.textContent = state.total;
+  scoreEl.textContent = 0; streakEl.textContent = 0; nNow.textContent = 1; feedbackEl.textContent = '\u00a0';
+  btnStart.classList.add('hidden'); btnReset.classList.remove('hidden');
+  setScreen(screenGame);
+  renderQ();
+  tickStart();
+}
+
+function renderQ(){
+  const q = state.order[state.qIndex];
+  tagType.textContent = q.tag;
+  questionEl.textContent = q.text;
+  optionsEl.innerHTML = '';
+  q.options.forEach((opt,idx)=>{
+    const div = document.createElement('button');
+    div.className = 'opt';
+    div.textContent = opt;
+    div.addEventListener('click', ()=> answer(idx));
+    optionsEl.appendChild(div);
+  });
+  btnNext.classList.add('hidden');
+}
+
+function answer(idx){
+  const q = state.order[state.qIndex];
+  const correct = (idx === q.answer);
+  const opts = [...document.querySelectorAll('.opt')];
+  opts.forEach((el,i)=>{
+    el.disabled=true;
+    if(i===q.answer) el.classList.add('correct');
+    if(i===idx && !correct) el.classList.add('wrong');
+  });
+  let delta = correct ? 10 : -5;
+  state.streak = correct ? state.streak+1 : 0;
+  if(correct && state.streak>=3) delta += 3; // bonus por racha
+  state.score += delta;
+  scoreEl.textContent = state.score;
+  streakEl.textContent = state.streak;
+  feedbackEl.textContent = correct ? `✅ ¡Correcto! (+${delta})` : `❌ Incorrecto (${delta})`;
+  state.history.push({q:q.text, type:q.type, correct, time:state.timeTotal - state.timeLeft});
+  btnNext.classList.remove('hidden');
+}
+
+function nextQ(){
+  if(state.qIndex < state.total-1){
+    state.qIndex++;
+    nNow.textContent = state.qIndex+1;
+    feedbackEl.textContent='\u00a0';
+    renderQ();
+  } else {
+    endGame('¡Completaste las preguntas!');
+  }
+}
+
+function tickStart(){
+  clearInterval(state.timer);
+  const start = Date.now();
+  const end = start + state.timeLeft*1000;
+  state.timer = setInterval(()=>{
+    if(state.paused) return;
+    const now = Date.now();
+    state.timeLeft = Math.max(0, Math.round((end - now)/1000));
+    const pct = Math.max(0, (state.timeLeft/state.timeTotal)*100);
+    bar.style.width = pct + '%';
+    if(state.timeLeft<=0){
+      endGame('¡Tiempo agotado!');
+    }
+  }, 200);
+}
+
+function endGame(title){
+  clearInterval(state.timer);
+  state.running=false;
+  endTitle.textContent = title;
+  const corrects = state.history.filter(h=>h.correct).length;
+  endSummary.textContent = `Puntaje total: ${state.score} · Aciertos: ${corrects}/${state.history.length} · Modo: ${state.mode}`;
+  setScreen(screenEnd);
+}
+
+function reset(){
+  setScreen(screenIntro);
+  btnStart.classList.remove('hidden');
+  btnReset.classList.add('hidden');
+  bar.style.width='100%';
+}
+
+function exportCSV(){
+  const rows = [
+    ['#','Pregunta','Tipo','Correcta','Tiempo (s)'],
+    ...state.history.map((h,i)=>[i+1, h.q.replaceAll(',',';'), h.type, h.correct?'si':'no', h.time])
+  ];
+  const csv = rows.map(r=>r.join(',')).join('\n');
+  const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'resultados_trigolympics.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Eventos
+btnStart.addEventListener('click', ()=>{
+  state.mode = modeSel.value;
+  start();
+});
+btnReset.addEventListener('click', reset);
+btnNext.addEventListener('click', nextQ);
+btnAgain?.addEventListener('click', ()=>{reset(); start();});
+btnExport?.addEventListener('click', exportCSV);
+modeSel.addEventListener('change', e=>{ state.mode = e.target.value; });
+
+// Teclado: P pausa, N siguiente
+window.addEventListener('keydown', (e)=>{
+  if(e.key.toLowerCase()==='p' && state.running){ state.paused = !state.paused; feedbackEl.textContent = state.paused? '⏸️ Pausado' : '\u00a0'; }
+  if(e.key.toLowerCase()==='n' && !screenGame.classList.contains('hidden')){ if(!btnNext.classList.contains('hidden')) nextQ(); }
+});
+</script>
+</body>
+</html>
